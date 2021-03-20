@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { fetcher } from '../api/fetcher'
+import Card from '../components/Card'
 
 const IS_DEV = process.env['NODE_ENV'] === 'development'
 const KEY = `?key=${process.env['NEXT_PUBLIC_API_KEY']}`
@@ -11,7 +12,8 @@ const FORECAST_KEY = 'forecast.json'
 export default function Home() {
   const [location, setLocation] = useState('London')
   const [buffer, setBuffer] = useState()
-  const { data: locationData, error: locationError } = useSWR('/api/geo', fetcher)
+
+  const { data: locationData, error: locationError } = useSWR('/api/geo', fetcher, { errorRetryCount: 3 })
   const { data: currentWeather, error: currentWeatherError } = useSWR(BASE_URL + CURRENT_KEY + KEY + `&q=${location}`, fetcher)
   const { data: forecast, error: forecastError } = useSWR(BASE_URL + FORECAST_KEY + KEY + `&q=${location}`, fetcher)
 
@@ -31,8 +33,14 @@ export default function Home() {
   if (currentWeatherError) return <h1>Failed to get weather data!</h1>
 
   return (
-    <div>
-      
+    <div className="h-full">
+      <Card>
+        {location}
+      </Card>
+
+      <Card>
+
+      </Card>
     </div>
   )
 }
