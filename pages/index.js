@@ -1,22 +1,25 @@
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { fetcher } from '../api/fetcher'
+
+import moment from 'moment'
+
 import Card from '../components/Card'
 
 const IS_DEV = process.env['NODE_ENV'] === 'development'
 const WEATHER_API_KEY = `?key=${process.env['NEXT_PUBLIC_WEATHER_API_KEY']}`
 const BASE_URL = 'https://api.weatherapi.com/v1/'
-const CURRENT_KEY = 'current.json'
 const FORECAST_KEY = 'forecast.json'
 
 export default function Home() {
   const [location, setLocation] = useState('London')
-  const [buffer, setBuffer] = useState()
+  const [forecasts, setForecasts] = useState()
+  const [currentDayForecast, setCurrentDayForecast] = useState()
   const [tempertureUnit, setTempertureUnit] = useState('c')
+  const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'))
 
   const { data: locationData, error: locationError } = useSWR('/api/geo', fetcher, { errorRetryCount: 3 })
-  const { data: currentWeather, error: currentWeatherError } = useSWR(BASE_URL + CURRENT_KEY + WEATHER_API_KEY + `&q=${location}`, fetcher)
-  const { data: forecast, error: forecastError } = useSWR(BASE_URL + FORECAST_KEY + WEATHER_API_KEY + `&q=${location}`, fetcher)
+  const { data: forecastData, error: forecastError } = useSWR(BASE_URL + FORECAST_KEY + WEATHER_API_KEY + `&q=${location}`, fetcher)
 
   useEffect(() => {
     console.log({ locationData })
@@ -24,39 +27,57 @@ export default function Home() {
   }, [locationData])
 
   useEffect(() => {
-    console.log({ weatherData: currentWeather })
-  }, [currentWeather])
+    setForecasts(forecastData)
+
+    setCurrentDayForecast(forecastData.forecast.forecastday.find(f => f.day === selectedDate))
+  }, [forecastData])
 
   if (!IS_DEV && !locationData) return <h1>Loading Geolocation data...</h1>
   if (!IS_DEV && locationError) return <h1>Failed to get geolocation data!</h1>
 
-  if (!currentWeather) return <h1>Fetching Weather data...</h1>
-  if (currentWeatherError) return <h1>Failed to get weather data!</h1>
+  if (!forecast) return <h1>Fetching Weather data...</h1>
+  if (forecastError) return <h1>Failed to get weather data!</h1>
 
   return (
     <Card className="h-full w-full mx-12 my-6 radius-md flex flex-col">
       <div className="flex-row">
         <div className="flex-col">
           <div>
-            {currentWeather.location.localtime}
+            {forecasts.location.localtime}
           </div>
 
           <div>
             <img
-              src={`https:${currentWeather.current.condition.icon}`}
+              src={`https:${forecasts.current.condition.icon}`}
             />
 
             <p>
-              {currentWeather.current.condition.text}
+              {forecasts.current.condition.text}
             </p>
           </div>
 
           <div>
-            {currentWeather.current['temp_' + tempertureUnit]}
+            {forecasts.current['temp_' + tempertureUnit]}
+            {currentDayForecast.day['maxtemp_' + tempertureUnit]}
+            {currentDayForecast.day['mintemp_' + tempertureUnit]}
           </div>
 
           <div>
-            {currentWeather.location.country}{" "}{currentWeather.location.region}
+            {forecasts.location.country}{" "}{forecasts.location.region}
+          </div>
+        </div>
+
+        <div className="flex-col">
+          Hourly Forecasts
+
+          <div className="flex-row">
+            {currentDayForecast.hour.filter(f => f.time_epoch > (Date.now() / 1000)).map(f =>
+              <div>
+                {f.time.split(' ')[1]}
+                {f.condition.icon}
+                {f['temp_' + tempertureUnit]}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -64,33 +85,39 @@ export default function Home() {
       <div className="flex flex-row">
         <div className="flex-col">
           <p>
-            Weather Details
+            Weather Details of {selectedDate}
           </p>
 
           <div className="flex flex-row flex-wrap">
             <div>
-              {currentWeather.current.cloud}
+              {forecasts.forecast.forecastday[selectedDate].astro.sunrise}
             </div>
             <div>
-              {currentWeather.current.precip_mm}
+              {forecasts.forecast.forecastday[selectedDate].astro.sunset}
             </div>
             <div>
-              {currentWeather.current.humidity}
+              {forecasts.current.cloud}
             </div>
             <div>
-              {currentWeather.current.uv}
+              {forecasts.current.precip_mm}
             </div>
             <div>
-              {currentWeather.current['feelslike_' + tempertureUnit]}
+              {forecasts.current.humidity}
             </div>
             <div>
-              {currentWeather.current.pressure_mb}
+              {forecasts.current.uv}
             </div>
             <div>
-              {currentWeather.current.wind_kph}
+              {forecasts.current['feelslike_' + tempertureUnit]}
             </div>
             <div>
-              {currentWeather.current.vis_km}
+              {forecasts.current.pressure_mb}
+            </div>
+            <div>
+              {forecasts.current.wind_kph}
+            </div>
+            <div>
+              {forecasts.current.vis_km}
             </div>
           </div>
         </div>
