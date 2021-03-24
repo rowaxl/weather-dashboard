@@ -139,7 +139,7 @@ export default function Home() {
                 Forecasts
               </p>
 
-              <div className="w-full flex flex-row flex-wrap overflow-scroll">
+              <div className="w-full flex flex-row flex-wrap overflow-scroll" style={{ maxWidth: 'calc(100% - 300px)'}}>
                 {currentDayForecast && currentDayForecast.hour
                   .filter(f => new Date(f.time) > new Date(forecasts.location.localtime))
                   .map(f =>
@@ -161,6 +161,8 @@ export default function Home() {
                     </p>
                   </div>
                 )}
+              </div>
+              <div className="w-full flex flex-row flex-wrap overflow-scroll mt-4" style={{ maxWidth: 'calc(100% - 300px)'}}>
                 {forecasts && forecasts.forecast.forecastday.slice(1).map(f => (
                   <div key={f.date} className="text-center mr-4 mb-4 shadow-md pt-2 px-4">
                     <p className="text-lg mb-2 font-bold">
@@ -187,7 +189,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex flex-row flex-1">
+          <div className="flex flex-row flex-1 mt-4">
             <div className="flex-col">
               <p>
                 Weather Details of {selectedDate}
