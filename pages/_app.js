@@ -13,9 +13,9 @@ function MyApp({ Component, pageProps }) {
         <Component {...pageProps} />
       </main>
 
-      <footer className="w-full bg-white bg-opacity-50 pl-4">
-        <p>
-          &copy; rowaxl0
+      <footer className="w-full pl-4 py-2">
+        <p className="dark:text-white">
+          &copy; rowaxl0, images from Unsplash
         </p>
       </footer>
     </div>

@@ -24,7 +24,7 @@ export default function Home() {
     revalidateOnReconnect: false,
     errorRetryCount: 1
   })
-  const { data: forecastData, error: forecastError } = useSWR(BASE_URL + FORECAST_KEY + WEATHER_API_KEY + `&q=${location}`, fetcher)
+  const { data: forecastData, error: forecastError } = useSWR(BASE_URL + FORECAST_KEY + WEATHER_API_KEY + `&q=${location}&days=7`, fetcher)
 
   useEffect(() => {
     console.log({ locationData })
@@ -35,8 +35,8 @@ export default function Home() {
     console.log({forecastData})
     if (forecastData) {
       setForecasts(forecastData)
-  
-      setCurrentDayForecast(forecastData.forecast.forecastday.find(f => f.day === selectedDate))
+
+      setCurrentDayForecast(forecastData.forecast.forecastday.find(f => f.date === selectedDate))
     }
   }, [forecastData])
 
@@ -46,11 +46,11 @@ export default function Home() {
   if (!forecastData) return <h1>Fetching Weather data...</h1>
   if (forecastError) return <h1>Failed to get weather data!</h1>
 
-  console.log({ forecasts })
+  console.log({ currentDayForecast })
 
   return (
-    <div className="px-12 py-6 flex flex-col justify-center">
-      <Card className="radius-md flex flex-col">
+    <div className="px-12 py-6 flex flex-col justify-center h-full">
+      <Card className="radius-md flex flex-col justify-between h-full">
         <div className="flex flex-col">
           <div className="flex flex-row justify-between">
             <form className="w-full">
@@ -76,85 +76,154 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <div>
-              {forecasts && forecasts.location.localtime}
-            </div>
+          <div className="flex flex-row mt-4 flex-1 justify-between">
+            <div className="flex flex-col min-w-max mr-4">
+              <div className="text-center mt-2">
+                {forecasts &&
+                  <p className="text-xl font-bold">
+                  {
+                    new Date(forecasts.location.localtime)
+                    .toLocaleString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })
+                  }
+                  </p>
+                }
+              </div>
 
-            <div>
-              {forecasts && 
+              <div className="ml-2 flex flex-col items-center">
+                {forecasts && 
+                  <img
+                    src={`https:${forecasts.current.condition.icon}`}
+                    className="w-24"
+                  />
+                }
+
+                <p className="text-center text-sm">
+                  {forecasts && forecasts.current.condition.text}
+                </p>
+              </div>
+
+              <div className="text-center my-4">
+                <p className="text-2xl mb-4">
+                  {forecasts && forecasts.current['temp_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
+                </p>
+
+                <p>
+                  <span className="text-xl font-bold text-red-600 mr-2">
+                    {currentDayForecast && currentDayForecast.day['maxtemp_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
+                  </span>
+                  {' / '}
+
+                  <span className="text-xl font-bold text-blue-600 ml-2">
+                    {currentDayForecast && currentDayForecast.day['mintemp_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
+                  </span>
+                </p>
+              </div>
+
+              <div className="text-xl flex-row mt-4 justify-center">
                 <img
-                  src={`https:${forecasts.current.condition.icon}`}
+                  src="/locationmark.svg"
+                  alt="location"
+                  className="w-12 h-12 mr-2 inline"
                 />
-              }
 
-              <p>
-                {forecasts && forecasts.current.condition.text}
+                {forecasts &&
+                  <span>
+                    {`${forecasts.location.name}, ${forecasts.location.country}`}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div className="flex flex-col mt-2">
+              <p className="font-bold text-xl">
+                Forecasts
               </p>
-            </div>
 
-            <div>
-              {forecasts && forecasts.current['temp_' + tempertureUnit]}
-              {currentDayForecast && currentDayForecast.day['maxtemp_' + tempertureUnit]}
-              {currentDayForecast && currentDayForecast.day['mintemp_' + tempertureUnit]}
-            </div>
+              <div className="w-full flex flex-row flex-wrap overflow-scroll">
+                {currentDayForecast && currentDayForecast.hour
+                  .filter(f => new Date(f.time) > new Date(forecasts.location.localtime))
+                  .map(f =>
+                  <div key={f.time} className="text-center mr-4 mb-4 shadow-md pt-2 px-4">
+                    <p className="text-lg mb-2">
+                      {f.time.split(' ')[1]}
+                    </p>
 
-            <div>
-              {forecasts && forecasts.location.country}{" "}{forecasts && forecasts.location.region}
+                    <img
+                      src={`https:${f.condition.icon}`}
+                      className="w-24"
+                    />
+
+                    <p>
+                      {f['temp_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
+                    </p>
+                    <p>
+                      {parseFloat(f.chance_of_rain) > 0 && `${f.chance_of_rain}%`}
+                    </p>
+                  </div>
+                )}
+                {forecasts && forecasts.forecast.forecastday.slice(1).map(f => (
+                  <div key={f.date} className="text-center mr-4 mb-4 shadow-md pt-2 px-4">
+                    <p className="text-lg mb-2 font-bold">
+                      {f.date}
+                    </p>
+
+                    <img
+                      src={`https:${f.day.condition.icon}`}
+                      className="w-24"
+                    />
+
+                    <p className="whitespace-pre">
+                      <span className="text-lg font-bold text-red-600 mr-2">
+                        {f.day['maxtemp_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
+                      </span>
+                      {' / '}
+                      <span className="text-lg font-bold text-blue-600 ml-2">
+                        {f.day['mintemp_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
+                      </span>
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="flex-col">
-            Hourly Forecasts
+          <div className="flex flex-row flex-1">
+            <div className="flex-col">
+              <p>
+                Weather Details of {selectedDate}
+              </p>
 
-            <div className="flex-row">
-              {currentDayForecast && currentDayForecast.hour.filter(f => f.time_epoch > (Date.now() / 1000)).map(f =>
+              <div className="flex flex-row flex-wrap">
                 <div>
-                  {f.time.split(' ')[1]}
-                  {f.condition.icon}
-                  {f['temp_' + tempertureUnit]}
+                  {currentDayForecast && currentDayForecast.astro.sunrise}
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-row">
-          <div className="flex-col">
-            <p>
-              Weather Details of {selectedDate}
-            </p>
-
-            <div className="flex flex-row flex-wrap">
-              <div>
-                {currentDayForecast && currentDayForecast.astro.sunrise}
-              </div>
-              <div>
-                {currentDayForecast && currentDayForecast.astro.sunset}
-              </div>
-              <div>
-                {forecasts && forecasts.current.cloud}
-              </div>
-              <div>
-                {forecasts && forecasts.current.precip_mm}
-              </div>
-              <div>
-                {forecasts && forecasts.current.humidity}
-              </div>
-              <div>
-                {forecasts && forecasts.current.uv}
-              </div>
-              <div>
-                {forecasts && forecasts.current['feelslike_' + tempertureUnit]}
-              </div>
-              <div>
-                {forecasts && forecasts.current.pressure_mb}
-              </div>
-              <div>
-                {forecasts && forecasts.current.wind_kph}
-              </div>
-              <div>
-                {forecasts && forecasts.current.vis_km}
+                <div>
+                  {currentDayForecast && currentDayForecast.astro.sunset}
+                </div>
+                <div>
+                  {forecasts && forecasts.current.cloud}
+                </div>
+                <div>
+                  {forecasts && forecasts.current.precip_mm}
+                </div>
+                <div>
+                  {forecasts && forecasts.current.humidity}
+                </div>
+                <div>
+                  {forecasts && forecasts.current.uv}
+                </div>
+                <div>
+                  {forecasts && forecasts.current['feelslike_' + tempertureUnit]}
+                </div>
+                <div>
+                  {forecasts && forecasts.current.pressure_mb}
+                </div>
+                <div>
+                  {forecasts && forecasts.current.wind_kph}
+                </div>
+                <div>
+                  {forecasts && forecasts.current.vis_km}
+                </div>
               </div>
             </div>
           </div>
