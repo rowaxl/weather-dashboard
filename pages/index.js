@@ -12,22 +12,19 @@ const BASE_URL = 'https://api.weatherapi.com/v1/'
 const FORECAST_KEY = 'forecast.json'
 
 export default function Home() {
-  const [location, setLocation] = useState('London')
+  const [location, setLocation] = useState()
   const [forecasts, setForecasts] = useState()
   const [currentDayForecast, setCurrentDayForecast] = useState()
   const [tempertureUnit, setTempertureUnit] = useState('c')
   const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'))
 
-  const { data: locationData, error: locationError } = useSWR('/api/geo', fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnMount: false,
-    revalidateOnReconnect: false,
-    errorRetryCount: 1
-  })
+  const { data: locationData, error: locationError } = useSWR('/api/geo', fetcher, { errorRetryCount: 3 })
   const { data: forecastData, error: forecastError } = useSWR(BASE_URL + FORECAST_KEY + WEATHER_API_KEY + `&q=${location}&days=7`, fetcher)
 
   useEffect(() => {
-    if (locationData) setLocation(locationData.geo.city)
+    if (!location) {
+      setLocation(locationData ? locationData.geo.city : 'london')
+    }
   }, [locationData])
 
   useEffect(() => {
@@ -52,6 +49,8 @@ export default function Home() {
   const handleChangeTemperatureUnit = (unit) => {
     setTempertureUnit(unit)
   }
+
+  console.log({ IS_DEV, locationData })
 
   if (!IS_DEV && !locationData) return <h1>Loading Geolocation data...</h1>
   if (!IS_DEV && locationError) return <h1>Failed to get geolocation data!</h1>

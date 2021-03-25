@@ -6,6 +6,8 @@ export default (req, res) => {
     .replace('::1', '')
     .replace('127.0.0.1', '')
 
+  console.log({clientIp})
+
   if (!clientIp) return res.status(400).end()
 
   const geo = geoip.lookup(clientIp)
