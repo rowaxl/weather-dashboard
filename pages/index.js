@@ -134,16 +134,16 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex flex-col mt-2">
+            <div className="flex flex-col mt-2 w-full">
               <p className="font-bold text-xl">
                 Forecasts
               </p>
 
-              <div className="w-full flex flex-row flex-wrap overflow-scroll" style={{ maxWidth: 'calc(100% - 300px)'}}>
+              <div className="w-full flex flex-row overflow-x-scroll" style={{ maxWidth: 'calc(80vw - 300px)'}}>
                 {currentDayForecast && currentDayForecast.hour
                   .filter(f => new Date(f.time) > new Date(forecasts.location.localtime))
                   .map(f =>
-                  <div key={f.time} className="text-center mr-4 mb-4 shadow-md pt-2 px-4">
+                  <div key={f.time} className="text-center mr-4 mb-4 shadow-md px-6 py-2">
                     <p className="text-lg mb-2">
                       {f.time.split(' ')[1]}
                     </p>
@@ -151,13 +151,14 @@ export default function Home() {
                     <img
                       src={`https:${f.condition.icon}`}
                       className="w-24"
-                    />
+                      />
 
-                    <p>
-                      {f['temp_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
-                    </p>
-                    <p>
+                    <div className="text-md h-5 my-2">
                       {parseFloat(f.chance_of_rain) > 0 && `${f.chance_of_rain}%`}
+                    </div>
+
+                    <p className="text-lg font-bold">
+                      {f['temp_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
                     </p>
                   </div>
                 )}
@@ -174,6 +175,10 @@ export default function Home() {
                       className="w-24"
                     />
 
+                    <div className="text-md h-5 my-2">
+                      {parseFloat(f.day.daily_chance_of_rain) > 0 && `${f.day.daily_chance_of_rain}%`}
+                    </div>
+
                     <p className="whitespace-pre">
                       <span className="text-lg font-bold text-red-600 mr-2">
                         {f.day['maxtemp_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
@@ -189,43 +194,146 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex flex-row flex-1 mt-4">
-            <div className="flex-col">
-              <p>
+          <div className="flex flex-row mt-4">
+            <div className="flex-col w-full">
+              <p className="font-bold text-xl">
                 Weather Details of {selectedDate}
               </p>
 
-              <div className="flex flex-row flex-wrap">
-                <div>
-                  {currentDayForecast && currentDayForecast.astro.sunrise}
-                </div>
-                <div>
-                  {currentDayForecast && currentDayForecast.astro.sunset}
-                </div>
-                <div>
-                  {forecasts && forecasts.current.cloud}
-                </div>
-                <div>
-                  {forecasts && forecasts.current.precip_mm}
-                </div>
-                <div>
-                  {forecasts && forecasts.current.humidity}
-                </div>
-                <div>
-                  {forecasts && forecasts.current.uv}
-                </div>
-                <div>
-                  {forecasts && forecasts.current['feelslike_' + tempertureUnit]}
-                </div>
-                <div>
-                  {forecasts && forecasts.current.pressure_mb}
-                </div>
-                <div>
-                  {forecasts && forecasts.current.wind_kph}
-                </div>
-                <div>
-                  {forecasts && forecasts.current.vis_km}
-                </div>
+              <div className="flex flex-row flex-nowrap justify-between my-4">
+                <Card className="text-center flex flex-row justify-center w-1/5 md:px-6">
+                  <div className="flex flex-col justify-center mr-4">
+                    <p className="text-lg text-gray-600">
+                      Sunrise
+                    </p>
+
+                    <p className="text-2xl font-bold">
+                      {currentDayForecast && currentDayForecast.astro.sunrise}
+                    </p>
+                  </div>
+
+                  <img
+                    src="/sunrise.svg"
+                    alt="sunrise icon"
+                    className="w-16"
+                  />
+                </Card>
+                <Card className="text-center flex flex-row justify-center w-1/5 md:px-6">
+                  <div className="flex flex-col justify-center mr-4">
+                    <p className="text-lg text-gray-600">
+                      Sunset
+                    </p>
+
+                    <p className="text-2xl font-bold">
+                      {currentDayForecast && currentDayForecast.astro.sunset}
+                    </p>
+                  </div>
+
+                  <img
+                    src="/sunset.svg"
+                    alt="sunset icon"
+                    className="w-16"
+                  />
+                </Card>
+                <Card className="text-center flex flex-row justify-center w-1/5 md:px-6">
+                  <div className="flex flex-col justify-center mr-4">
+                    <p className="text-lg text-gray-600">
+                      Cloud
+                    </p>
+
+                    <p className="text-2xl font-bold">
+                      {forecasts && forecasts.current.cloud} %
+                    </p>
+                  </div>
+
+                  <img
+                    src="/cloud.svg"
+                    className="w-16"
+                  />
+                </Card>
+                <Card className="text-center flex flex-row justify-center w-1/5 md:px-6">
+                  <div className="flex flex-col justify-center mr-4">
+                    <p className="text-lg text-gray-600">
+                      Precipitation
+                    </p>
+
+                    <p className="text-2xl font-bold">
+                      {forecasts && forecasts.current.precip_mm} mm
+                    </p>
+                  </div>
+
+                  <img
+                    src="/precipitation.svg"
+                    className="w-16"
+                  />
+                </Card>
+              </div>
+
+              <div className="flex flex-row flex-nowrap justify-between my-4">
+                <Card className="text-center flex flex-row justify-center w-1/5 md:px-6">
+                  <div className="flex flex-col justify-center mr-4">
+                    <p className="text-lg text-gray-600">
+                      Humidity
+                    </p>
+
+                    <p className="text-2xl font-bold">
+                      {forecasts && forecasts.current.humidity} %
+                    </p>
+                  </div>
+
+                  <img
+                    src="/humidity.svg"
+                    className="w-16"
+                  />
+                </Card>
+                <Card className="text-center flex flex-row justify-center w-1/5 md:px-6">
+                  <div className="flex flex-col justify-center mr-4">
+                    <p className="text-lg text-gray-600">
+                      Feels like
+                    </p>
+
+                    <p className="text-2xl font-bold">
+                      {forecasts && forecasts.current['feelslike_' + tempertureUnit]}°{tempertureUnit.toUpperCase()}
+                    </p>
+                  </div>
+
+                  <img
+                    src="/temperature.svg"
+                    className="w-16"
+                  />
+                </Card>
+                <Card className="text-center flex flex-row justify-center w-1/5 md:px-6">
+                  <div className="flex flex-col justify-center mr-4">
+                    <p className="text-lg text-gray-600">
+                      Pressure
+                    </p>
+
+                    <p className="text-2xl font-bold">
+                      {forecasts && forecasts.current.pressure_mb} hPa
+                    </p>
+                  </div>
+
+                  <img
+                    src="/pressure.svg"
+                    className="w-16"
+                  />
+                </Card>
+                <Card className="text-center flex flex-row justify-center w-1/5 md:px-6">
+                  <div className="flex flex-col justify-center mr-4">
+                    <p className="text-lg text-gray-600">
+                      Wind
+                    </p>
+
+                    <p className="text-2xl font-bold">
+                      {forecasts && forecasts.current.wind_kph} km/h
+                    </p>
+                  </div>
+
+                  <img
+                    src="/wind.svg"
+                    className="w-12"
+                  />
+                </Card>
               </div>
             </div>
           </div>
