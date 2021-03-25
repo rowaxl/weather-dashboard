@@ -22,9 +22,7 @@ export default function Home() {
   const { data: forecastData, error: forecastError } = useSWR(BASE_URL + FORECAST_KEY + WEATHER_API_KEY + `&q=${location}&days=7`, fetcher)
 
   useEffect(() => {
-    if (!location) {
-      setLocation(locationData ? locationData.geo.city : 'london')
-    }
+    setLocation(locationData ? locationData.geo.city : 'london')
   }, [locationData])
 
   useEffect(() => {
@@ -49,8 +47,6 @@ export default function Home() {
   const handleChangeTemperatureUnit = (unit) => {
     setTempertureUnit(unit)
   }
-
-  console.log({ IS_DEV, locationData })
 
   if (!IS_DEV && !locationData) return <h1>Loading Geolocation data...</h1>
   if (!IS_DEV && locationError) return <h1>Failed to get geolocation data!</h1>
@@ -93,7 +89,7 @@ export default function Home() {
           </div>
 
           {
-            (!forecastData || !forecasts) ?
+            (!forecastData || !forecasts || !forecastError) ?
               <div className="flex flex-row flex-1 justify-center" style={{ height: '40vh'}}>
                 <div className="flex flex-col justify-center text-center">
                   <p className="text-2xl">
