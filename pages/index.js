@@ -5,11 +5,15 @@ import { fetcher } from '../api/fetcher'
 import moment from 'moment'
 
 import Card from '../components/Card'
+import Background from '../components/Background'
 
 const IS_DEV = process.env['NODE_ENV'] === 'development'
 const WEATHER_API_KEY = `?key=${process.env['NEXT_PUBLIC_WEATHER_API_KEY']}`
-const BASE_URL = 'https://api.weatherapi.com/v1/'
+const WEATHER_API_BASE_URL = 'https://api.weatherapi.com/v1/'
 const FORECAST_KEY = 'forecast.json'
+
+const UNSPLASH_API_BASE_URL = 'https://api.unsplash.com/search/photos'
+const UNSPLASH_API_KEY = `?client_id=${process.env['NEXT_PUBLIC_UNSPLASH_API_KEY']}`
 
 export default function Home() {
   const [location, setLocation] = useState()
@@ -17,9 +21,11 @@ export default function Home() {
   const [currentDayForecast, setCurrentDayForecast] = useState()
   const [tempertureUnit, setTempertureUnit] = useState('c')
   const [selectedDate, setSelectedDate] = useState(moment().format('YYYY-MM-DD'))
+  const [background, setBackground] = useState()
 
   const { data: locationData, error: locationError } = useSWR('/api/geo', fetcher, { errorRetryCount: 3 })
-  const { data: forecastData, error: forecastError } = useSWR(BASE_URL + FORECAST_KEY + WEATHER_API_KEY + `&q=${location}&days=7`, fetcher)
+  const { data: forecastData, error: forecastError } = useSWR(WEATHER_API_BASE_URL + FORECAST_KEY + WEATHER_API_KEY + `&q=${location}&days=7`, fetcher)
+  const { data: backgroundData, error: backgroundError } = useSWR(UNSPLASH_API_BASE_URL + UNSPLASH_API_KEY + `&query=${location}&page=1&orientation=landscape`, fetcher)
 
   useEffect(() => {
     setLocation(locationData ? locationData.geo.city : 'london')
@@ -34,6 +40,10 @@ export default function Home() {
       setCurrentDayForecast(forecastData.forecast.forecastday.find(f => f.date === selectedDate))
     }
   }, [forecastData])
+
+  useEffect(() => {
+    setBackground((backgroundData && backgroundData.results.length > 0) ? backgroundData.results[0].urls.full : '')
+  }, [backgroundData])
 
   const handleUpdateLocation = (e) => {
     if (!e.target.value) {
@@ -53,6 +63,10 @@ export default function Home() {
 
   return (
     <div className="px-12 py-6 flex flex-col justify-center h-full">
+      <Background
+        src={background}
+      />
+
       <Card className="radius-md flex flex-col justify-between h-full">
         <div className="flex flex-col">
           <div className="flex flex-row justify-between">
@@ -369,6 +383,12 @@ export default function Home() {
                   </>
           }
         </div>
+
+        <footer className="w-full pl-4 py-2">
+          <p className="text-sm">
+            &copy; rowaxl0, images from Unsplash
+          </p>
+        </footer>
       </Card>
     </div>
   )

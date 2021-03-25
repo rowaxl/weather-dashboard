@@ -12,12 +12,6 @@ function MyApp({ Component, pageProps }) {
       <main className="flex-1 overflow-scroll">
         <Component {...pageProps} />
       </main>
-
-      <footer className="w-full pl-4 py-2">
-        <p className="dark:text-white">
-          &copy; rowaxl0, images from Unsplash
-        </p>
-      </footer>
     </div>
   )
 }
