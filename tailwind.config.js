@@ -1,5 +1,6 @@
 module.exports = {
-  purge: [],
+  purge: ["./components/**/*.{js,ts,jsx,tsx}", "./pages/**/*.{js,ts,jsx,tsx}"],
+  important: false,
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {},
@@ -7,5 +8,9 @@ module.exports = {
   variants: {
     extend: {},
   },
-  plugins: [],
+  darkMode: 'media',
+  plugins: [
+    require('tailwindcss-filters'),
+    require('@tailwindcss/forms'),
+  ],
 }
