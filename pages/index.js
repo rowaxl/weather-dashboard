@@ -89,7 +89,7 @@ export default function Home() {
           </div>
 
           {
-            (!forecastData || !forecasts || !forecastError) ?
+            (!forecastData || !forecasts || forecastError) ?
               <div className="flex flex-row flex-1 justify-center" style={{ height: '40vh'}}>
                 <div className="flex flex-col justify-center text-center">
                   <p className="text-2xl">
